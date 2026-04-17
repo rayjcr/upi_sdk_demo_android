@@ -132,7 +132,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun launchDropin(type: CPayMethodType) {
-        if(type == CPayMethodType.UNKNOWN || type == CPayMethodType.PAYPAL || type == CPayMethodType.PAY_WITH_VENMO || mDemoViewModel.isUPI) {
+        if (mDemoViewModel.isUPI && (type == CPayMethodType.UNIONPAY
+                    || type == CPayMethodType.ALI
+                    || type == CPayMethodType.WECHAT)) {
+            // These methods don't need a chargeToken — the SDK creates the charge
+            // via requestUPIOrder. Calling getChargeToken() here would create a
+            // duplicate charge with the same reference, resulting in error 806.
+            mDemoViewModel.buildDropInRequest(type).start(this, mStartForResult)
+        } else if(type == CPayMethodType.UNKNOWN || type == CPayMethodType.PAYPAL || type == CPayMethodType.PAY_WITH_VENMO || mDemoViewModel.isUPI) {
             mDemoViewModel.mAccessToken.value?.let(mDemoViewModel::getChargeToken)
         } else {
             mDemoViewModel.buildDropInRequest(type).start(this, mStartForResult)
